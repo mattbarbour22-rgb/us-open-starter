@@ -1,0 +1,39 @@
+U.S. OPEN PICK 3 LIVE - START HERE
+
+1. Upload this folder to a new GitHub repository.
+2. Import the repository into Vercel.
+3. Add these Vercel environment variables:
+   SLASH_GOLF_API_KEY
+   SLASH_GOLF_API_HOST=live-golf-data.p.rapidapi.com
+   SLASH_GOLF_ORG_ID=1
+   SLASH_GOLF_TOURN_ID=<your tournament id>
+   SLASH_GOLF_YEAR=2026
+
+4. Manual API refresh control:
+   Open app/api/leaderboard/route.js and change:
+   export const revalidate = 300;
+
+   300 = 5 minutes
+   900 = 15 minutes
+   1800 = 30 minutes
+   3600 = 1 hour
+
+5. To replace the spreadsheet picks:
+   Open app/page.js.
+   Replace the poolEntries block only.
+   Keep the same format:
+   {
+     "player": "Name",
+     "picks": ["Pick 1", "Pick 2", "Pick 3"]
+   }
+
+6. Tournament settings are near the top of app/page.js inside tournamentConfig.
+
+7. Movement arrows:
+   The movementBaselineRanks object is intentionally empty to start.
+   Leave it empty before a tournament.
+   Add baseline ranks later only if you want arrows from a saved point.
+
+8. Prize pool is already set to $3,500.
+
+This starter keeps the working PGA Championship logic but updates it for the 126th U.S. Open at Shinnecock Hills.
