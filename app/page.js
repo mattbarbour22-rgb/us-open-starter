@@ -826,30 +826,43 @@ function evaluatePool(entries, players, previousRanks) {
 }
 
 export default function Home() {
-  const [apiState, setApiState] = useState({ mode: 'loading', players: [], updatedAt: null, message: '' });
-  const [poolExpanded, setPoolExpanded] = useState(false);
-  const [golfExpanded, setGolfExpanded] = useState(false);
+  const [apiState, setApiState] = useState({
+  mode: 'loading',
+  players: [],
+  updatedAt: null,
+  message: ''
+});
 
-  async function loadLeaderboard() {
-    try {
-      const res = await fetch('/api/leaderboard');
-      const data = await res.json();
-      setApiState(data);
-    } catch (err) {
-      setApiState({ mode: 'error', players: [], updatedAt: new Date().toISOString(), message: err?.message || 'Unable to load scores.' });
-    }
-  }
+const [poolExpanded, setPoolExpanded] = useState(false);
+const [golfExpanded, setGolfExpanded] = useState(false);
 
-  useEffect(() => {
-    loadLeaderboard();
-    const interval = setInterval(loadLeaderboard, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const players = useMemo(() => addPositionLabels(apiState.players?.length ? apiState.players : fallbackPlayers), [apiState]);
-  const [movementRanks, setMovementRanks] = useState({});
+const [movementRanks, setMovementRanks] = useState({});
 const [poolStateLoaded, setPoolStateLoaded] = useState(false);
-  useEffect(() => {
+
+async function loadLeaderboard() {
+  try {
+    const res = await fetch('/api/leaderboard');
+    const data = await res.json();
+    setApiState(data);
+  } catch (err) {
+    setApiState({
+      mode: 'error',
+      players: [],
+      updatedAt: new Date().toISOString(),
+      message: err?.message || 'Unable to load scores.'
+    });
+  }
+}
+
+useEffect(() => {
+  loadLeaderboard();
+
+  const interval = setInterval(loadLeaderboard, 5 * 60 * 1000);
+
+  return () => clearInterval(interval);
+}, []);
+
+useEffect(() => {
   async function loadPoolState() {
     try {
       const data = await fetch('/api/pool-state').then(r => r.json());
@@ -864,6 +877,14 @@ const [poolStateLoaded, setPoolStateLoaded] = useState(false);
 
   loadPoolState();
 }, [apiState.updatedAt]);
+
+const players = useMemo(
+  () =>
+    addPositionLabels(
+      apiState.players?.length ? apiState.players : fallbackPlayers
+    ),
+  [apiState]
+);
 
 const pool = useMemo(() => {
   return evaluatePool(poolEntries, players, movementRanks);
@@ -882,7 +903,9 @@ useEffect(() => {
 
   fetch('/api/pool-state', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify({
       tournament_name: 'THE CJ CUP Byron Nelson',
       current_ranks: currentRanks
@@ -892,56 +915,35 @@ useEffect(() => {
 
 const leader = pool[0];
 
-useEffect(() => {
-  async function loadPoolState() {
-    try {
-      const data = await fetch('/api/pool-state').then(r => r.json());
+const poolLeaders = pool.filter(
+  p => p.numericRank === pool[0]?.numericRank && !p.eliminated
+);
 
-      setMovementRanks(data.previous_ranks || {});
-      setPoolStateLoaded(true);
-    } catch {
-      setMovementRanks({});
-      setPoolStateLoaded(true);
-    }
-  }
+const leaderNames = poolLeaders.map(p => p.player).join(' / ');
 
-  loadPoolState();
-}, [apiState.updatedAt]);
+const updatedText = apiState.updatedAt
+  ? `Updated ${Math.max(
+      0,
+      Math.round(
+        (Date.now() - new Date(apiState.updatedAt).getTime()) / 60000
+      )
+    )} min ago`
+  : 'Waiting for scores';
 
-const pool = useMemo(() => {
-  return evaluatePool(poolEntries, players, movementRanks);
-}, [players, movementRanks]);
+const golfLeaderNames = players
+  .filter(p => p.position === players[0]?.position)
+  .map(p => p.name)
+  .join(' / ');
 
-useEffect(() => {
-  if (!poolStateLoaded || !pool.length || apiState.mode !== 'live') return;
+const warningText =
+  apiState.mode === 'missing-key'
+    ? 'API key missing in Vercel. Add SLASH_GOLF_API_KEY.'
+    : apiState.mode === 'api-error'
+      ? `Live API fallback active: ${apiState.message}`
+      : '';
 
-  const currentRanks = {};
-
-  pool.forEach(entry => {
-    if (!entry.eliminated && entry.numericRank) {
-      currentRanks[entry.player] = entry.numericRank;
-    }
-  });
-
-  fetch('/api/pool-state', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      tournament_name: 'THE CJ CUP Byron Nelson',
-      current_ranks: currentRanks
-    })
-  });
-}, [poolStateLoaded, pool, apiState.mode]);
-
-  const leader = pool[0];
-  const poolLeaders = pool.filter(p => p.numericRank === pool[0]?.numericRank && !p.eliminated);
-  const leaderNames = poolLeaders.map(p => p.player).join(' / ');
-  const updatedText = apiState.updatedAt ? `Updated ${Math.max(0, Math.round((Date.now() - new Date(apiState.updatedAt).getTime()) / 60000))} min ago` : 'Waiting for scores';
-  const golfLeaderNames = players.filter(p => p.position === players[0]?.position).map(p => p.name).join(' / ');
-  const warningText = apiState.mode === 'missing-key' ? 'API key missing in Vercel. Add SLASH_GOLF_API_KEY.' : apiState.mode === 'api-error' ? `Live API fallback active: ${apiState.message}` : '';
-  const aliveCount = pool.filter(p => !p.eliminated).length;
-  const eliminatedCount = pool.filter(p => p.eliminated).length;
-
+const aliveCount = pool.filter(p => !p.eliminated).length;
+const eliminatedCount = pool.filter(p => p.eliminated).length;
   return (
     <main className="page" style={{ '--hero-image': `url(${tournamentConfig.heroImage})` }}>
       <div className="header">
