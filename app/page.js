@@ -847,7 +847,49 @@ export default function Home() {
   }, []);
 
   const players = useMemo(() => addPositionLabels(apiState.players?.length ? apiState.players : fallbackPlayers), [apiState]);
-  const pool = useMemo(() => evaluatePool(poolEntries, players, movementBaselineRanks), [players]);
+  const [movementRanks, setMovementRanks] = useState({});
+const [poolStateLoaded, setPoolStateLoaded] = useState(false);
+
+useEffect(() => {
+  async function loadPoolState() {
+    try {
+      const data = await fetch('/api/pool-state').then(r => r.json());
+
+      setMovementRanks(data.previous_ranks || {});
+      setPoolStateLoaded(true);
+    } catch {
+      setMovementRanks({});
+      setPoolStateLoaded(true);
+    }
+  }
+
+  loadPoolState();
+}, [apiState.updatedAt]);
+
+const pool = useMemo(() => {
+  return evaluatePool(poolEntries, players, movementRanks);
+}, [players, movementRanks]);
+
+useEffect(() => {
+  if (!poolStateLoaded || !pool.length || apiState.mode !== 'live') return;
+
+  const currentRanks = {};
+
+  pool.forEach(entry => {
+    if (!entry.eliminated && entry.numericRank) {
+      currentRanks[entry.player] = entry.numericRank;
+    }
+  });
+
+  fetch('/api/pool-state', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tournament_name: 'THE CJ CUP Byron Nelson',
+      current_ranks: currentRanks
+    })
+  });
+}, [poolStateLoaded, pool, apiState.mode]);
 
   const leader = pool[0];
   const poolLeaders = pool.filter(p => p.numericRank === pool[0]?.numericRank && !p.eliminated);
