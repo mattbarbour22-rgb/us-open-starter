@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 const TOURNAMENT_STATE_ID = process.env.TOURNAMENT_STATE_ID || '2026-cj-cup-byron-nelson';
 
 function getSupabase() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
 
-  if (!url || !key) {
-    throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-  }
-
-  return createClient(url, key);
+function sameRanks(a = {}, b = {}) {
+  return JSON.stringify(a) === JSON.stringify(b);
 }
 
 export async function GET() {
@@ -41,14 +41,27 @@ export async function POST(req) {
   try {
     const supabase = getSupabase();
     const body = await req.json();
+    const nextRanks = body.current_ranks || {};
+
+    const { data: existing } = await supabase
+      .from('tournament_state')
+      .select('current_ranks')
+      .eq('id', TOURNAMENT_STATE_ID)
+      .single();
+
+    const oldCurrent = existing?.current_ranks || {};
+
+    const previousRanks = sameRanks(oldCurrent, nextRanks)
+      ? body.previous_ranks || oldCurrent
+      : oldCurrent;
 
     const { error } = await supabase
       .from('tournament_state')
       .upsert({
         id: TOURNAMENT_STATE_ID,
         tournament_name: body.tournament_name || TOURNAMENT_STATE_ID,
-        previous_ranks: body.previous_ranks || {},
-        current_ranks: body.current_ranks || {},
+        previous_ranks: previousRanks,
+        current_ranks: nextRanks,
         locked_eliminated: body.locked_eliminated || [],
         cut_locked: Boolean(body.cut_locked),
         updated_at: new Date().toISOString()
