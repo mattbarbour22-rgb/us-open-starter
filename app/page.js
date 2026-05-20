@@ -682,8 +682,20 @@ function scoreLabel(score) {
 }
 
 function posLabel(player) {
-  if (!player || player.position >= 999) return 'MC';
-  if (player.positionLabel && String(player.positionLabel).trim()) return String(player.positionLabel);
+  if (!player) return '—';
+
+  const label = String(player.positionLabel || '').trim().toUpperCase();
+  const hasTeeTime = player.teeTime && String(player.teeTime).trim();
+
+  if (player.position >= 999) {
+    if (hasTeeTime && label !== 'CUT' && label !== 'MC') return '—';
+    return 'MC';
+  }
+
+  if (player.positionLabel && String(player.positionLabel).trim()) {
+    return String(player.positionLabel);
+  }
+
   return String(player.position);
 }
 
@@ -714,7 +726,16 @@ function buildMap(players) {
 }
 
 function isLivePick(p) {
-  return p && p.position < 999 && posLabel(p) !== 'MC';
+  if (!p) return false;
+
+  const label = String(p.positionLabel || '').trim().toUpperCase();
+  const hasTeeTime = p.teeTime && String(p.teeTime).trim();
+
+  if (p.position >= 999 && hasTeeTime && label !== 'CUT' && label !== 'MC') {
+    return true;
+  }
+
+  return p.position < 999 && posLabel(p) !== 'MC';
 }
 
 function comparePickSets(a, b) {
