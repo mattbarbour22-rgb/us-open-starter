@@ -981,7 +981,7 @@ const eliminatedCount = pool.filter(p => p.eliminated).length;
             <div className="panel-title">Projected Pool Leader</div>
             <div className="leader-box">
               <div className="big">{leaderNames ? leaderNames.toUpperCase() : 'WAITING'}</div>
-              <div className="reason">{golfLeaderNames || 'Waiting for first scores'} currently leads the tournament.<br />{leader ? `${leaderNames || leader.player} lead the pool on current tie-breaks.` : 'Pool leaderboard will update once scores arrive.'}</div>
+              <div className="reason">{golfLeaderNames || 'Waiting for first scores'} currently leads the tournament.<br />{leader ? `${leaderNames || leader.player} leads the pool on current tie-breaks.` : 'Pool leaderboard will update once scores arrive.'}</div>
               <div className="stat-row">
                 <div><strong>{tournamentConfig.prizePool}</strong><span>Prize Pool</span></div>
                 <div><strong>{aliveCount}</strong><span>Alive</span></div>
