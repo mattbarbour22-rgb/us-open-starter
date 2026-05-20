@@ -51,15 +51,15 @@ const poolEntries = [
   { player: "R Fowler", picks: ["Zac Blair", "Kevin Streelman", "Justin Lower"] },
   { player: "Sparky", picks: ["Patton Kizzire", "Kevin Streelman", "Justin Lower"] },
 
-  { player: "Barley", picks: ["Ryan Moore", "Troy Merritt", "Austin Cook"] },
-  { player: "Pete Holly", picks: ["Ryan Moore", "Troy Merritt", "Tyler Duncan"] },
-  { player: "Timmy S", picks: ["Ryan Moore", "Austin Cook", "Tyler Duncan"] },
+  { player: "Barley", picks: ["Scottie Scheffler", "Troy Merritt", "Austin Cook"] },
+  { player: "Pete Holly", picks: ["Scottie Scheffler", "Troy Merritt", "Tyler Duncan"] },
+  { player: "Timmy S", picks: ["Scottie Scheffler", "Austin Cook", "Tyler Duncan"] },
   { player: "Mr Grant", picks: ["Troy Merritt", "Austin Cook", "Tyler Duncan"] },
 
-  { player: "Greg B", picks: ["Pierceson Coody", "Parker Coody", "Joel Dahmen"] },
-  { player: "JD Boy", picks: ["Pierceson Coody", "Parker Coody", "Charley Hoffman"] },
+  { player: "Greg B", picks: ["Pierceson Coody", "Scottie Scheffler", "Joel Dahmen"] },
+  { player: "JD Boy", picks: ["Pierceson Coody", "Scottie Scheffler", "Charley Hoffman"] },
   { player: "Mr Manson", picks: ["Pierceson Coody", "Joel Dahmen", "Charley Hoffman"] },
-  { player: "G Ponting", picks: ["Parker Coody", "Joel Dahmen", "Charley Hoffman"] },
+  { player: "G Ponting", picks: ["Scottie Scheffler", "Joel Dahmen", "Charley Hoffman"] },
 
   { player: "R McKnight", picks: ["Rasmus Højgaard", "Rico Hoey", "Robert Streb"] },
   { player: "Chalkey", picks: ["Rasmus Højgaard", "Rico Hoey", "Seamus Power"] },
