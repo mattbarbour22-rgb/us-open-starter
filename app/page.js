@@ -709,14 +709,37 @@ function sortPlayers(players) {
 
 function addPositionLabels(players) {
   const sorted = sortPlayers(players);
+
   const counts = new Map();
+
   sorted.forEach(p => {
-    if (p.position < 999) counts.set(p.position, (counts.get(p.position) || 0) + 1);
+    if (p.position < 999) {
+      counts.set(p.position, (counts.get(p.position) || 0) + 1);
+    }
   });
-  return sorted.map(p => ({
-    ...p,
-    positionLabel: p.position >= 999 ? 'MC' : counts.get(p.position) > 1 ? `T${p.position}` : String(p.position)
-  }));
+
+  return sorted.map(p => {
+    const hasTeeTime = p.teeTime && String(p.teeTime).trim();
+    const existingLabel = String(p.positionLabel || '').trim().toUpperCase();
+
+    if (p.position >= 999) {
+      return {
+        ...p,
+        positionLabel:
+          hasTeeTime && existingLabel !== 'CUT' && existingLabel !== 'MC'
+            ? '—'
+            : 'MC'
+      };
+    }
+
+    return {
+      ...p,
+      positionLabel:
+        counts.get(p.position) > 1
+          ? `T${p.position}`
+          : String(p.position)
+    };
+  });
 }
 
 function buildMap(players) {
