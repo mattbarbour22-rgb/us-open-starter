@@ -226,9 +226,34 @@ function posLabel(player) {
 }
 
 function sortPlayers(players) {
-  return [...players].sort((a,b) => {
-    if ((a.position ?? 999) !== (b.position ?? 999)) return (a.position ?? 999) - (b.position ?? 999);
-    if ((a.score ?? 999) !== (b.score ?? 999)) return (a.score ?? 999) - (b.score ?? 999);
+  const tournamentStarted = players.some(
+    p =>
+      (p.position ?? 999) < 999 ||
+      (p.thru && !String(p.thru).toLowerCase().includes('tee'))
+  );
+
+  // Before tournament starts → tee time order
+  if (!tournamentStarted) {
+    return [...players].sort((a, b) => {
+      const ta = Date.parse(`1970-01-01 ${a.teeTime || '11:59pm'}`);
+      const tb = Date.parse(`1970-01-01 ${b.teeTime || '11:59pm'}`);
+
+      if (ta !== tb) return ta - tb;
+
+      return String(a.name).localeCompare(String(b.name));
+    });
+  }
+
+  // Once tournament starts → permanent live leaderboard order
+  return [...players].sort((a, b) => {
+    if ((a.position ?? 999) !== (b.position ?? 999)) {
+      return (a.position ?? 999) - (b.position ?? 999);
+    }
+
+    if ((a.score ?? 999) !== (b.score ?? 999)) {
+      return (a.score ?? 999) - (b.score ?? 999);
+    }
+
     return String(a.name).localeCompare(String(b.name));
   });
 }
