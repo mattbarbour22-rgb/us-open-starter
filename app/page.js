@@ -537,9 +537,10 @@ useEffect(() => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      tournament_name: 'THE CJ CUP Byron Nelson',
-      current_ranks: currentRanks
-    })
+  tournament_name: 'THE CJ CUP Byron Nelson',
+  current_ranks: currentRanks,
+  leaderboard_updated_at: apiState.updatedAt
+})
   });
 }, [poolStateLoaded, apiState.updatedAt, apiState.mode]);
 
