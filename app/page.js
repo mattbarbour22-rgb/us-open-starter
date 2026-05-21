@@ -232,18 +232,29 @@ function formatNzTeeTime(teeTime, timezone = 'America/Chicago') {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    const source = new Date(
-      `${today} ${teeTime}`
+    const [time, modifier] = teeTime.split(/(am|pm)/i);
+
+    let [hours, minutes] = time.trim().split(':').map(Number);
+
+    if (modifier?.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+    if (modifier?.toLowerCase() === 'am' && hours === 12) hours = 0;
+
+    const utcDate = new Date(
+      new Date(`${today}T00:00:00`).toLocaleString('en-US', {
+        timeZone: timezone
+      })
     );
 
-    const nzTime = new Intl.DateTimeFormat('en-NZ', {
+    utcDate.setHours(hours);
+    utcDate.setMinutes(minutes || 0);
+
+    return new Intl.DateTimeFormat('en-NZ', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
       timeZone: 'Pacific/Auckland'
-    }).format(source);
+    }).format(utcDate);
 
-    return nzTime;
   } catch {
     return teeTime;
   }
