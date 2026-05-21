@@ -9,6 +9,7 @@ const tournamentConfig = {
   location: 'Southampton, New York',
   dates: 'June 18–21, 2026',
   prizePool: '$3,500',
+  tournamentTimezone: 'America/Chicago',
   jackpotRule: 'To win, your picks must include the outright U.S. Open winner. If no entry has the winner, the prize jackpots again.',
   heroImage: 'https://images.unsplash.com/photo-1500932334442-8761ee4810a7?auto=format&fit=crop&w=2400&q=80'
 };
@@ -223,6 +224,29 @@ function posLabel(player) {
   }
 
   return String(player.position);
+}
+
+function formatNzTeeTime(teeTime, timezone = 'America/Chicago') {
+  if (!teeTime) return '';
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    const source = new Date(
+      `${today} ${teeTime}`
+    );
+
+    const nzTime = new Intl.DateTimeFormat('en-NZ', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Pacific/Auckland'
+    }).format(source);
+
+    return nzTime;
+  } catch {
+    return teeTime;
+  }
 }
 
 function sortPlayers(players) {
@@ -566,7 +590,14 @@ const eliminatedCount = pool.filter(p => p.eliminated).length;
               {players.map((p, idx) => (
                 <tr key={`${p.name}-${idx}`} className={idx >= 14 ? 'hidden-row' : ''}>
                   <td>{posLabel(p)}</td><td className="player">{p.name}</td><td className="red">{scoreLabel(p.today)}</td>
-                  <td>{p.teeTime && (!p.thru || String(p.thru).toLowerCase().includes('tee')) ? p.teeTime : (p.thru || '—')}</td>
+                  <td>
+  {p.teeTime && (!p.thru || String(p.thru).toLowerCase().includes('tee'))
+    ? formatNzTeeTime(
+        p.teeTime,
+        tournamentConfig.tournamentTimezone
+      )
+    : (p.thru || '—')}
+</td>
                   <td className="red">{scoreLabel(p.score)}</td>
                 </tr>
               ))}
