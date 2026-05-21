@@ -621,7 +621,9 @@ const eliminatedCount = pool.filter(p => p.eliminated).length;
           <section className="panel summary-panel">
             <div className="panel-title">Projected Pool Leader</div>
             <div className="leader-box">
-              <div className="big">{leaderNames ? leaderNames.toUpperCase() : 'WAITING'}</div>
+              <div className="big">
+  {tournamentStarted ? leaderNames.toUpperCase() : ''}
+</div>
               <div className="reason">
   {tournamentStarted && leader
     ? (
