@@ -601,14 +601,7 @@ const eliminatedCount = pool.filter(p => p.eliminated).length;
               {players.map((p, idx) => (
                 <tr key={`${p.name}-${idx}`} className={idx >= 14 ? 'hidden-row' : ''}>
                   <td>{posLabel(p)}</td><td className="player">{p.name}</td><td className="red">{scoreLabel(p.today)}</td>
-                  <td>
-  {p.teeTime && (!p.thru || String(p.thru).toLowerCase().includes('tee'))
-    ? formatNzTeeTime(
-        p.teeTime,
-        tournamentConfig.tournamentTimezone
-      )
-    : (p.thru || '—')}
-</td>
+                  <td>{p.teeTime && (!p.thru || String(p.thru).toLowerCase().includes('tee')) ? p.teeTime : (p.thru || '—')}</td>
                   <td className="red">{scoreLabel(p.score)}</td>
                 </tr>
               ))}
