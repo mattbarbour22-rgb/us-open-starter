@@ -1,6 +1,6 @@
 // Manual API cache control. Change this one number when you want faster/slower updates.
 // Next.js uses SECONDS here: 300 = 5 min, 900 = 15 min, 1800 = 30 min, 3600 = 1 hour.
-export const revalidate = 7200;
+export const revalidate = 10000;
 
 const TOURN_ID = process.env.SLASH_GOLF_TOURN_ID || '033';
 const YEAR = process.env.SLASH_GOLF_YEAR || '2026';
