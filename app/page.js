@@ -541,7 +541,7 @@ useEffect(() => {
       current_ranks: currentRanks
     })
   });
-}, [poolStateLoaded, pool, apiState.mode]);
+}, [poolStateLoaded, apiState.updatedAt, apiState.mode]);
 
 const leader = pool[0];
 
