@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const TOURNAMENT_STATE_ID = process.env.TOURNAMENT_STATE_ID || '2026-cj-cup-byron-nelson';
+const TOURNAMENT_STATE_ID =
+  process.env.TOURNAMENT_STATE_ID || '2026-cj-cup-byron-nelson';
 
 function getSupabase() {
   return createClient(
@@ -19,7 +20,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('tournament_state')
-      .select('current_ranks, previous_ranks, locked_eliminated, cut_locked')
+      .select('current_ranks, previous_ranks, locked_eliminated, cut_locked, leaderboard_updated_at')
       .eq('id', TOURNAMENT_STATE_ID)
       .single();
 
@@ -32,7 +33,8 @@ export async function GET() {
       current_ranks: {},
       previous_ranks: {},
       locked_eliminated: [],
-      cut_locked: false
+      cut_locked: false,
+      leaderboard_updated_at: null
     });
   }
 }
@@ -41,18 +43,30 @@ export async function POST(req) {
   try {
     const supabase = getSupabase();
     const body = await req.json();
+
     const nextRanks = body.current_ranks || {};
+    const leaderboardUpdatedAt = body.leaderboard_updated_at || null;
 
     const { data: existing } = await supabase
       .from('tournament_state')
-      .select('current_ranks')
+      .select('current_ranks, previous_ranks, leaderboard_updated_at')
       .eq('id', TOURNAMENT_STATE_ID)
       .single();
 
     const oldCurrent = existing?.current_ranks || {};
+    const oldPrevious = existing?.previous_ranks || {};
+    const oldLeaderboardUpdatedAt = existing?.leaderboard_updated_at || null;
+
+    if (
+      leaderboardUpdatedAt &&
+      oldLeaderboardUpdatedAt &&
+      leaderboardUpdatedAt === oldLeaderboardUpdatedAt
+    ) {
+      return Response.json({ ok: true, skipped: true });
+    }
 
     const previousRanks = sameRanks(oldCurrent, nextRanks)
-      ? body.previous_ranks || oldCurrent
+      ? oldPrevious || oldCurrent
       : oldCurrent;
 
     const { error } = await supabase
@@ -64,6 +78,7 @@ export async function POST(req) {
         current_ranks: nextRanks,
         locked_eliminated: body.locked_eliminated || [],
         cut_locked: Boolean(body.cut_locked),
+        leaderboard_updated_at: leaderboardUpdatedAt,
         updated_at: new Date().toISOString()
       });
 
@@ -71,6 +86,9 @@ export async function POST(req) {
 
     return Response.json({ ok: true });
   } catch (err) {
-    return Response.json({ ok: false, error: err?.message || String(err) });
+    return Response.json({
+      ok: false,
+      error: err?.message || String(err)
+    });
   }
 }
