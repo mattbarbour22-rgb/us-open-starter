@@ -286,10 +286,15 @@ function sortPlayers(players) {
     }
 
     if ((a.score ?? 999) !== (b.score ?? 999)) {
-      return (a.score ?? 999) - (b.score ?? 999);
-    }
+  return (a.score ?? 999) - (b.score ?? 999);
+}
 
-    return String(a.name).localeCompare(String(b.name));
+const ta = Date.parse(`1970-01-01 ${a.teeTime || '11:59pm'}`);
+const tb = Date.parse(`1970-01-01 ${b.teeTime || '11:59pm'}`);
+
+if (ta !== tb) return ta - tb;
+
+return String(a.name).localeCompare(String(b.name));
   });
 }
 
