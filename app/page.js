@@ -448,14 +448,38 @@ function evaluatePool(entries, players, previousRanks) {
   const alive = rankEntries(aliveRaw, hasRealScores, previousRanks);
 
   const eliminated = rankedWithStatus
-    .filter(entry => isDominated(entry, rankedWithStatus))
-    .map(entry => ({
+  .filter(entry => isDominated(entry, rankedWithStatus))
+  .map(entry => {
+
+    const livePicks = entry.sortedPicks.filter(isLivePick);
+
+    let eliminationReason = 'ALL MC';
+
+    if (livePicks.length > 0) {
+
+      const coveringEntry = rankedWithStatus.find(other => {
+        if (other.player === entry.player) return false;
+
+        const otherLive = other.sortedPicks.filter(isLivePick);
+
+        return livePicks.every(lp =>
+          otherLive.some(op => keyName(op.name) === keyName(lp.name))
+        ) && comparePickSets(otherLive, livePicks) < 0;
+      });
+
+      if (coveringEntry) {
+        eliminationReason = `COVERED BY ${coveringEntry.player.toUpperCase()}`;
+      }
+    }
+
+    return {
       ...entry,
       eliminated: true,
       rankLabel: '',
-      move: 'ELIMINATED',
+      move: eliminationReason,
       moveClass: 'move-down'
-    }));
+    };
+  });
 
   return [...alive, ...eliminated];
 }
