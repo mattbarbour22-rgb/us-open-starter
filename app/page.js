@@ -550,7 +550,25 @@ const pool = useMemo(() => {
 }, [players, movementRanks]);
 
 useEffect(() => {
-  if (!poolStateLoaded || !pool.length || apiState.mode !== 'live') return;
+
+  const roundFinished =
+    players.length > 0 &&
+    players.every(p => {
+      const thru = String(p.thru || '').toUpperCase();
+
+      return (
+        p.position >= 999 ||
+        thru === 'F' ||
+        thru === 'F*'
+      );
+    });
+
+  if (
+    !poolStateLoaded ||
+    !pool.length ||
+    apiState.mode !== 'live' ||
+    !roundFinished
+  ) return;
 
   const currentRanks = {};
 
@@ -566,12 +584,13 @@ useEffect(() => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-  tournament_name: 'THE CJ CUP Byron Nelson',
-  current_ranks: currentRanks,
-  leaderboard_updated_at: apiState.updatedAt
-})
+      tournament_name: 'THE CJ CUP Byron Nelson',
+      current_ranks: currentRanks,
+      leaderboard_updated_at: apiState.updatedAt
+    })
   });
-}, [poolStateLoaded, apiState.updatedAt, apiState.mode]);
+
+}, [poolStateLoaded, apiState.updatedAt, apiState.mode, players]);
 
 const leader = pool[0];
 
@@ -669,7 +688,7 @@ const eliminatedCount = pool.filter(p => p.eliminated).length;
           <section className={`panel pool-panel ${poolExpanded ? 'expanded' : ''}`}>
             <div className="panel-title">Live Pool Leaderboard</div>
             <table>
-              <thead><tr><th>Pos</th><th>Move</th><th>Player</th><th>Best Pick</th><th>Next Best</th><th>3rd Pick</th></tr></thead>
+              <thead><tr><th>Pos</th><th>ROUND MOVE</th><th>Player</th><th>Best Pick</th><th>Next Best</th><th>3rd Pick</th></tr></thead>
               <tbody>
                 {pool.map((entry, idx) => {
                   const best = entry.sortedPicks[0], second = entry.sortedPicks[1], third = entry.sortedPicks[2];
